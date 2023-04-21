@@ -1,85 +1,75 @@
 const init = () => {
 
-    // Controls
-    const fullScreenControl = new ol.control.FullScreen();
-    const mousePosition = new ol.control.MousePosition();
-    const overViewMapControl = new ol.control.OverviewMap({
-        collapsed: false,
-        layers: [
-            new ol.layer.Tile({
-                source: new ol.source.OSM()
-            })
-        ]
-    });
-
-    const scaleLineControl = new ol.control.ScaleLine();
-    const zoomSlider = new ol.control.ZoomSlider();
-    const zoomToExtentControl = new ol.control.ZoomToExtent();
-
     // Create a map object
     const map = new ol.Map({
         // View
         view: new ol.View({
             center: [-12080385,7567433], // center of view
             zoom: 3,
-            maxZoom: 12,
-            minZoom: 2,
-            rotation: 0 // radiants
+            /*
+            El extends en la configuracion inicial deel mapa, establece
+            el espacio visible total de las capas, especificando
+            de manera rectangular.
+            */
+            extent: [
+                -13424929.347505514, 
+                1287199.7496701013, 
+                -9535813.348355746, 
+                3831024.0510007674
+            ]
         }),
         //Layers
         layers: [
             new ol.layer.Tile({
-                source: new ol.source.OSM() // OSM -> OpenStreetMap
+                source: new ol.source.OSM(), // OSM -> OpenStreetMap
+                zIndex: 1,
+                visible: true,
+                /*
+                extent: [Xmin, Ymin, Xmax, Ymax]
+
+                hace una especie de corte rectangular a la capa usando
+                las coordenadas especificadas.
+                Si existe una capa inferior, se logra un efecto de mapa diferente
+                para esa seccion
+                */
+                extent: [
+                    -13424929.347505514, 
+                    1287199.7496701013, 
+                    -9535813.348355746, 
+                    3831024.0510007674
+                ],
+                opacity: 0.5
             })
         ],
         // Target
         target: "js-map",
-        keyboardEventTarget: document,
-        controls: ol.control.defaults().extend([
-            fullScreenControl,
-            mousePosition,
-            overViewMapControl,
-            scaleLineControl,
-            zoomSlider,
-            zoomToExtentControl,
-        ])
     });
 
-    // Overlay
-    const popupContainerElement = document.querySelector('#popup-coordinates');
-    const popup = new ol.Overlay({
-        element: popupContainerElement,
-        positioning: 'center-left'
-    });
-    map.addOverlay(popup)
+    // Layer Group
+    const layerGroup = new ol.layer.Group({
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.OSM({
+                    url: 'https://{a-c}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
+                }),
+                zIndex: 0,
+                visible: true,
+                extent: [
+                    -13424929.347505514, 
+                    1287199.7496701013, 
+                    -9535813.348355746, 
+                    3831024.0510007674
+                ],
+                opacity: 0.5
+            })
+        ]
+    })
 
-    // Evento
+    map.addLayer(layerGroup);
+
     map.on('click', (e) => {
-        const clickedCoordinate = e.coordinate;
-        popup.setPosition(undefined);
-        popup.setPosition(clickedCoordinate);
-        popupContainerElement.innerHTML = clickedCoordinate;
+        console.log(e.coordinate);
     })
-
-    // DragRotate Interaction
-    const dragRotateInteraction = new ol.interaction.DragRotate({
-        condition: ol.events.condition.altKeyOnly
-    });
-    map.addInteraction(dragRotateInteraction)
-
-    // Drawing interaction
-    const drawInteraction = new ol.interaction.Draw({
-        type: 'Polygon',
-        freehand: true
-    });
-
-    drawInteraction.on('drawend', (e) => {
-        let parser = new ol.format.GeoJSON();
-        let drwaFeatures = parser.writeFeaturesObject([e.feature])
-        console.log(drwaFeatures.features[0].geometry.coordinates)
-    })
-
-    map.addInteraction(drawInteraction)
 }
 
 window.onload = init();

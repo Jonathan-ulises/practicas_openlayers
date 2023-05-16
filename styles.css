@@ -8,6 +8,16 @@ body {
 }
 
 .map {
-    height: 100vh;
-    width: 100vw;
+    height: 100%;
+    width: 100%;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 20vw 80vw;
+    grid-template-rows: 100vh;
+}
+
+.sidebar {
+    margin-left: 15px;
 }

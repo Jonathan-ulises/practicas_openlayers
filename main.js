@@ -1,7 +1,12 @@
 
+// Attribution control
 const attributionControl = new ol.control.Attribution({
     collapsible: true
-})
+});
+
+
+
+
 
 const init = () => {
 
@@ -23,64 +28,36 @@ const init = () => {
             //     3831024.0510007674
             // ]
         }),
-        //Layers
-        layers: [
-            new ol.layer.Tile({
-                source: new ol.source.OSM(), // OSM -> OpenStreetMap
-                zIndex: 1,
-                visible: true,
-                /*
-                extent: [Xmin, Ymin, Xmax, Ymax]
-
-                hace una especie de corte rectangular a la capa usando
-                las coordenadas especificadas.
-                Si existe una capa inferior, se logra un efecto de mapa diferente
-                para esa seccion
-                */
-                // extent: [
-                //     -13424929.347505514, 
-                //     1287199.7496701013, 
-                //     -9535813.348355746, 
-                //     3831024.0510007674
-                // ],
-                // opacity: 0.5
-                opacity: 1
-            })
-        ],
         // Target
         target: "js-map",
         controls: ol.control.defaults({attribution: false}).extend([attributionControl])
     });
 
-    // Layer Group
-    const layerGroup = new ol.layer.Group({
-        layers: [
-            new ol.layer.Tile({
-                source: new ol.source.OSM({
-                    url: 'https://{a-c}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
-                }),
-                zIndex: 0,
-                visible: false,
-                extent: [
-                    -13424929.347505514, 
-                    1287199.7496701013, 
-                    -9535813.348355746, 
-                    3831024.0510007674
-                ],
-                opacity: 0.5
-            }),
-            // Bing Maps Basemap Layer
-            new ol.layer.Tile({
-                source: new ol.source.BingMaps({
-                    key: 'ArAgLEHRfl7WKapNubsPQf6XKRjKdfFzTOc4sAUwkAheJikVlCnCloTXmNjDeYVn',
-                    imagerySet: 'AerialWithLabels', // Aerial, AerialWithLabels, Road, CanvasDark, CanvasGray
-                }),
-                visible: true
-            })
-        ]
-    })
+    // BASE LAYERS
+    // OpenStreet Map Standard
+    const openStreetMapStandardLayer = new ol.layer.Tile({
+        source: new ol.source.OSM(),
+        visible: true,
+        title: 'OMStandard'
+    });
 
-    map.addLayer(layerGroup);
+    const openStreetMapHumanitarian = new ol.layer.Tile({
+        source: new ol.source.OSM({
+            url: 'https://{a-c}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
+        }),
+        visible: false,
+        title: 'OMSHumanitarian'
+    });
+
+    // Bing Maps Basemap Layer
+    const bingMaps = new ol.layer.Tile({
+        source: new ol.source.BingMaps({
+            key: 'ArAgLEHRfl7WKapNubsPQf6XKRjKdfFzTOc4sAUwkAheJikVlCnCloTXmNjDeYVn',
+            imagerySet: 'AerialWithLabels', // Aerial, AerialWithLabels, Road, CanvasDark, CanvasGray
+        }),
+        visible: false,
+        title: 'BingMaps'
+    })
 
     // CartoDB BaseMap Layer
     const cartoDBBaseLayer = new ol.layer.Tile({
@@ -88,18 +65,9 @@ const init = () => {
             url: 'https://{1-4}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{scale}.png',
             attributions: '@ CARTO'
         }),
-        visible: true
+        visible: false,
+        title: 'CartoDarkAll'
     });
-
-    map.addLayer(cartoDBBaseLayer);
-
-    // TileDebug
-    const tileDebugLayer = new ol.layer.Tile({
-        source: new ol.source.TileDebug(),
-        visible: false
-    });
-
-    map.addLayer(tileDebugLayer);
 
     // Stamen basemap Layer
     const stamenBaseLayer = new ol.layer.Tile({
@@ -107,47 +75,67 @@ const init = () => {
             layer: 'terrain-labels',
             attributions: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
         }),
-        visible: true
+        visible: false,
+        title: 'StamenTerrainWithLabels'
     });
-
-    map.addLayer(stamenBaseLayer)
 
     const stamenBaseMapLayer = new ol.layer.Tile({
         source: new ol.source.XYZ({
             url: 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png',
             attributions: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
         }),
-        visible: false
+        visible: false,
+        title: 'StamenToner'
     })
 
-    map.addLayer(stamenBaseMapLayer)
+    // Layer Group
+    const baseLayerGroup = new ol.layer.Group({
+        layers: [
+            openStreetMapStandardLayer,
+            openStreetMapHumanitarian,
+            bingMaps,
+            cartoDBBaseLayer,
+            stamenBaseLayer,
+            stamenBaseMapLayer
+        ]
+    })
 
-    // tile ArcGIS REST API Layer (NO FUNCIONA)
-//   const tileArcGISLayer = new ol.layer.Tile({
-//     source: new ol.source.TileArcGISRest({
-//       url: "http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Louisville/LOJIC_LandRecords_Louisville/MapServer"
-//     }),
-//     visible: true
-//   })
-//   map.addLayer(tileArcGISLayer);
+    map.addLayer(baseLayerGroup);
 
-    // NOAA WMS Layer (NO FUNCIONA)
-    // const NOAAWMSLayer = new ol.layer.Tile({
-    //     source: new ol.source.TileWMS({
-    //         url: 'https://nowcoast.noaa.gov/arcgis/services/nowcoast/forecast_meteoceanhydro_sfc_ndfd_dailymaxairtemp_offsets/MapServer/WMSServer?',
-    //         params: {
-    //             LAYERS: 5,
-    //             FORMAT: 'image/png',
-    //             TRANSPARENT: true
-    //         },
-    //         attributions: '<a href=https://nowcoast.noaa.gov/>© NOAA<a/>'
-    //     })
-    // })
-    // map.addLayer(NOAAWMSLayer);
+    // Layer Switcher logic for BaseLayers
+    const baseLayerElements = document.querySelectorAll('.sidebar > input[type=radio]');
+    for(let baseLayerElement of baseLayerElements) {
+        baseLayerElement.addEventListener('change', ({target}) => {
+            const baseLayerElementValue = target.value;
+            baseLayerGroup.getLayers().forEach((element, index, array) => {
+                const baseLayerName = element.get('title');
+                element.setVisible(baseLayerName === baseLayerElementValue)
+            })
+        })
+    }
 
-    // map.on('click', (e) => {
-    //     console.log(e.coordinate);
-    // })
+    const openStreetMapFragmentStatic = new ol.layer.Image({
+        source: new ol.source.ImageStatic({
+           url: './data/meme.jpeg',
+           imageExtends: [-25036552.780723654, 3758126.8986177184, -23788650.58167784, 5009845.312339512],
+           attributions: '@MEME DE LOS GODS'
+        }),
+        title: 'openstreetMapFragmentStatic'
+    });
+
+    map.addLayer(openStreetMapFragmentStatic)
+
+    map.on('click', (e) => {
+        console.log(e.coordinate)
+    })
+
+    // TileDebug
+    const tileDebugLayer = new ol.layer.Tile({
+        source: new ol.source.TileDebug(),
+        visible: true
+    });
+    map.addLayer(tileDebugLayer)
+
 }
 
 window.onload = init();

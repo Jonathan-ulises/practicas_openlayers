@@ -11,19 +11,19 @@ const init = () => {
             el espacio visible total de las capas, especificando
             de manera rectangular.
             */
-            extent: [
-                -13424929.347505514, 
-                1287199.7496701013, 
-                -9535813.348355746, 
-                3831024.0510007674
-            ]
+            // extent: [
+            //     -13424929.347505514, 
+            //     1287199.7496701013, 
+            //     -9535813.348355746, 
+            //     3831024.0510007674
+            // ]
         }),
         //Layers
         layers: [
             new ol.layer.Tile({
                 source: new ol.source.OSM(), // OSM -> OpenStreetMap
                 zIndex: 1,
-                visible: true,
+                visible: false,
                 /*
                 extent: [Xmin, Ymin, Xmax, Ymax]
 
@@ -53,7 +53,7 @@ const init = () => {
                     url: 'https://{a-c}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
                 }),
                 zIndex: 0,
-                visible: true,
+                visible: false,
                 extent: [
                     -13424929.347505514, 
                     1287199.7496701013, 
@@ -61,15 +61,60 @@ const init = () => {
                     3831024.0510007674
                 ],
                 opacity: 0.5
+            }),
+            // Bing Maps Basemap Layer
+            new ol.layer.Tile({
+                source: new ol.source.BingMaps({
+                    key: 'ArAgLEHRfl7WKapNubsPQf6XKRjKdfFzTOc4sAUwkAheJikVlCnCloTXmNjDeYVn',
+                    imagerySet: 'AerialWithLabels', // Aerial, AerialWithLabels, Road, CanvasDark, CanvasGray
+                }),
+                visible: false
             })
         ]
     })
 
     map.addLayer(layerGroup);
 
-    map.on('click', (e) => {
-        console.log(e.coordinate);
+    // CartoDB BaseMap Layer
+    const cartoDBBaseLayer = new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            url: 'https://{1-4}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{scale}.png',
+        }),
+        visible: false
+    });
+
+    map.addLayer(cartoDBBaseLayer);
+
+    // TileDebug
+    const tileDebugLayer = new ol.layer.Tile({
+        source: new ol.source.TileDebug(),
+        visible: false
+    });
+
+    map.addLayer(tileDebugLayer);
+
+    // Stamen basemap Layer
+    const stamenBaseLayer = new ol.layer.Tile({
+        source: new ol.source.Stamen({
+            layer: 'terrain-labels'
+        }),
+        visible: false
+    });
+
+    map.addLayer(stamenBaseLayer)
+
+    const stamenBaseMapLayer = new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            url: 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
+        }),
+        visible: true
     })
+
+    map.addLayer(stamenBaseMapLayer)
+
+    // map.on('click', (e) => {
+    //     console.log(e.coordinate);
+    // })
 }
 
 window.onload = init();
